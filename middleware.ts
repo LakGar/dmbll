@@ -1,0 +1,23 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const protectedRoutes = ["/dashboard", "/app", "/settings"];
+
+export function middleware(request: NextRequest) {
+  const session = request.cookies.get("session")?.value;
+  const { pathname } = request.nextUrl;
+
+  const isProtected = protectedRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+
+  if (isProtected && !session) {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/app/:path*", "/settings/:path*"],
+};
